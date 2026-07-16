@@ -19,3 +19,7 @@ crash.log
 .DS_Store
 .idea/
 .vscode/
+
+# eval run state (per-learner)
+evals/last_run.json
+evals/history.jsonl

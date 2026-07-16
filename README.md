@@ -14,6 +14,48 @@ prompt, so any coding agent works.
 
 ---
 
+## The scenario (read this first)
+
+**The company.** Altostrat Singapore employs full-time staff, interns, and an
+extended workforce. All their rules live in one place: the **Altostrat Singapore
+Employee Policy Handbook & Conduct Guidelines** — a **52-page PDF** (`data/handbook.pdf`)
+covering leave, expenses, business courtesies, conduct, privacy, and more.
+
+**The problem.** Employees keep asking HR the same questions — *"How much sick leave
+do I get?"*, *"Can I expense this?"*, *"How many vacation days for a 12-hour shift?"*
+HR is a bottleneck, answers come out inconsistent, and nobody reads a 52-page PDF.
+Some questions are even **traps**: a purchase *under* a dollar limit can still be
+**prohibited** (e.g. gift cards, adult entertainment). A confident-but-wrong answer
+is a compliance risk.
+
+**The ask (Project Elevate).** Ship a conversational **HR Policy Assistant** that
+answers employee policy questions **accurately, grounded strictly in the handbook,
+with citations** — and that **refuses** when the answer isn't in the handbook instead
+of guessing.
+
+### What the agent *is*
+A single, focused **ADK `LlmAgent`** (Gemini) for policy Q&A. Not a freeform chatbot:
+it uses **tools** to fetch the relevant policy, then answers from what it fetched.
+
+### What the agent *does*
+1. Takes an employee's natural-language question.
+2. **Retrieves** the relevant policy — via **RAG** or **OKF** (the two "brains" you build).
+3. Answers **only** from that policy, **cites** the source, and **declines**
+   out-of-domain or unanswerable questions.
+
+### What the policy handbook *does*
+It is the agent's **single source of truth** (its "grounding corpus"). The agent may
+answer *only* from it. In this lab the same handbook is given to the agent **two ways**:
+a **Vertex AI Search** index (Track A / RAG) and an **OKF markdown bundle** in
+`knowledge/` (Track B).
+
+### Why this is the RAG-vs-OKF lesson
+Accurate, auditable Q&A over a big document is *exactly* the "how does an agent know
+the docs?" problem. RAG and OKF are two answers — and this handbook, with its gotcha
+rules, is the perfect place to feel the difference.
+
+---
+
 ## What you'll build
 
 The agent is an ADK `LlmAgent` (Gemini). You implement the parts that make it an
@@ -100,8 +142,16 @@ agent/         # the agent you build (scaffold with TODOs)
 knowledge/     # the OKF bundle (given, complete) + check_okf.py
 rag/           # Track A: terraform + ingest + verify (given)
 data/          # handbook.pdf (source corpus)
-evals/         # policy_eval.json + run_eval.py
-LAB.md         # step-by-step exercises 00 -> 06
+evals/         # policy_eval.json + run_eval.py + RUBRICS.md
+LAB.md         # Lab 1 — build the agent (exercises 00 -> 06)
+LAB_EVALS.md   # Lab 2 — evals & hillclimbing (measure & improve the agent)
 ```
 
-See **`LAB.md`** to start.
+## Two labs
+
+1. **`LAB.md` — Build the agent.** Implement the retrieval tools, prompt, and agent
+   (RAG and OKF).
+2. **`LAB_EVALS.md` — Evals & hillclimbing.** Measure the agent against a rubric,
+   read the scoreboard, and improve the score the honest way (see `evals/RUBRICS.md`).
+
+Start with **`LAB.md`**.

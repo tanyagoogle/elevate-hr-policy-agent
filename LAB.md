@@ -8,6 +8,30 @@ Time: ~90 minutes. Track B (OKF) needs no cloud; Track A (RAG) needs a GCP proje
 
 ---
 
+## The scenario & what you're building
+
+**Context.** Altostrat Singapore's rules live in one 52-page PDF — the *Employee
+Policy Handbook & Conduct Guidelines* (`data/handbook.pdf`). Employees flood HR with
+the same questions (sick leave, expenses, vacation, gifts), answers are inconsistent,
+and some questions are **traps** — e.g. a $45 gift card is *prohibited* even though
+it's under the $50 host-gift limit.
+
+**Your mission (Project Elevate).** Build an **HR Policy Assistant**: an ADK
+`LlmAgent` (Gemini) that answers an employee's policy question **only** from the
+handbook, **cites** the source, and **refuses** when the answer isn't there (no
+guessing).
+
+**How it works.** The agent uses **tools** to fetch the right policy, then answers
+from what it fetched. You'll give it two interchangeable retrieval "brains":
+- **OKF** (Track B): navigate a curated markdown knowledge bundle — no cloud.
+- **RAG** (Track A): semantic search over the handbook in **Vertex AI Search**.
+
+Same agent, same prompt, same eval — swap the brain, compare the results. The
+handbook is the agent's **single source of truth**; everything it says must trace
+back to it. (Full framing in `README.md`.)
+
+---
+
 ## 00 — Setup
 
 ```bash
@@ -162,3 +186,6 @@ from semantic recall.
 You built one agent two ways and formed an evidence-based opinion on **when to reach
 for RAG vs OKF**. A reference implementation is available to instructors on the
 `instructor` branch if you'd like to compare approaches afterward.
+
+**Next → [Lab 2: Evals & Hillclimbing](LAB_EVALS.md)** — now measure your agent
+against a rubric and improve its score the honest way.

@@ -93,16 +93,35 @@ def _ensure_session(user_id, session_id):
 
 
 def run_query(query: str, user_id: str = "learner", session_id: str = "session-1") -> str:
+    answer, _evidence = run_query_traced(query, user_id=user_id, session_id=session_id)
+    return answer
+
+
+def run_query_traced(query: str, user_id: str = "learner", session_id: str = "session-1"):
+    """Like run_query, but also returns the evidence the agent retrieved.
+
+    Returns (answer, evidence) where evidence is a list of
+    {"tool": <tool name>, "payload": <the tool's return value>} — i.e. exactly
+    what each retrieval tool handed back to the model. The eval harness uses this
+    to check *grounding* (did the answer stick to what was retrieved?).
+    """
     from google.genai import types
 
     runner = _ensure_runner()
     _ensure_session(user_id, session_id)
     message = types.Content(role="user", parts=[types.Part(text=query)])
     final = ""
+    evidence = []
     for event in runner.run(user_id=user_id, session_id=session_id, new_message=message):
-        if event.is_final_response() and event.content and event.content.parts:
-            final = event.content.parts[0].text
-    return final
+        if not (event.content and event.content.parts):
+            continue
+        for part in event.content.parts:
+            fr = getattr(part, "function_response", None)
+            if fr is not None:
+                evidence.append({"tool": getattr(fr, "name", "?"), "payload": fr.response})
+        if event.is_final_response() and event.content.parts:
+            final = event.content.parts[0].text or final
+    return final, evidence
 
 
 def _interactive():
