@@ -9,8 +9,8 @@ Retrieval happens via the selected RETRIEVAL_MODE. OKF mode needs no cloud; RAG
 mode needs a provisioned Vertex data store. Answer generation needs Gemini creds.
 
 Usage:
-    python evals/run_eval.py --mode okf --target agent
-    RETRIEVAL_MODE=rag python evals/run_eval.py --target agent
+    uv run python evals/run_eval.py --mode okf --target agent
+    RETRIEVAL_MODE=rag uv run python evals/run_eval.py --target agent
 
 (--target solution is available to instructors on the `instructor` branch.)
 """

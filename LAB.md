@@ -11,7 +11,7 @@ Time: ~90 minutes. Track B (OKF) needs no cloud; Track A (RAG) needs a GCP proje
 ## 00 — Setup
 
 ```bash
-pip install -r requirements.txt
+uv sync
 cp .env.example .env          # set GEMINI_API_KEY
 uvx google-agents-cli setup   # encouraged: equips your coding agent with ADK skills
 ```
@@ -19,8 +19,8 @@ uvx google-agents-cli setup   # encouraged: equips your coding agent with ADK sk
 Sanity checks:
 
 ```bash
-python knowledge/check_okf.py knowledge     # OKF bundle is well-formed
-python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
+uv run python knowledge/check_okf.py knowledge     # OKF bundle is well-formed
+uv run python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 ```
 
 ---
@@ -30,7 +30,7 @@ python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 The scaffold has no retrieval brain and no `root_agent` yet.
 
 ```bash
-python -m agent.agent "How many days of bereavement leave do I get?"
+uv run python -m agent.agent "How many days of bereavement leave do I get?"
 ```
 
 You'll get: `root_agent is None — implement the TODO block in agent/agent.py`.
@@ -70,7 +70,7 @@ Build the OKF tools and the prompt, then the agent.
 
 Verify:
 ```bash
-python -c "from agent.tools.okf_tool import list_concepts, read_concept; \
+uv run python -c "from agent.tools.okf_tool import list_concepts, read_concept; \
   print(len(list_concepts()['concepts']),'concepts'); \
   print(read_concept('leave/vacation-leave')['title'])"
 ```
@@ -88,8 +88,8 @@ how to use the tools, citations, domain containment).
 
 Run it:
 ```bash
-RETRIEVAL_MODE=okf python -m agent.agent "How many days of bereavement leave do I get?"
-RETRIEVAL_MODE=okf adk web .     # or use the web UI and inspect the tool calls
+RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
+RETRIEVAL_MODE=okf uv run adk web .     # or use the web UI and inspect the tool calls
 ```
 
 You should get **3 days? No — 4 weeks (20 work days)**, with a Sources link. Inspect
@@ -102,7 +102,7 @@ the trajectory: the agent called `list_concepts` then `read_concept('leave/berea
 Follow **`rag/README.md`**: `terraform apply`, ingest the PDF, and verify:
 
 ```bash
-python rag/verify-rag-search.py --query "outpatient sick leave and medical certificate"
+uv run python rag/verify-rag-search.py --query "outpatient sick leave and medical certificate"
 ```
 
 Then **implement `agent/tools/rag_tool.py`** (`search_policy_docs`).
@@ -112,7 +112,7 @@ Then **implement `agent/tools/rag_tool.py`** (`search_policy_docs`).
 
 Run the same question against the RAG brain:
 ```bash
-RETRIEVAL_MODE=rag python -m agent.agent "How many days of paid outpatient sick leave do I get?"
+RETRIEVAL_MODE=rag uv run python -m agent.agent "How many days of paid outpatient sick leave do I get?"
 ```
 
 > 💸 Run `terraform destroy` (see `rag/README.md`) when you're done — Vertex AI
@@ -125,8 +125,8 @@ RETRIEVAL_MODE=rag python -m agent.agent "How many days of paid outpatient sick 
 Run the **same** eval against both brains:
 
 ```bash
-python evals/run_eval.py --mode okf --target agent
-python evals/run_eval.py --mode rag --target agent
+uv run python evals/run_eval.py --mode okf --target agent
+uv run python evals/run_eval.py --mode rag --target agent
 ```
 
 Fill in your own comparison:

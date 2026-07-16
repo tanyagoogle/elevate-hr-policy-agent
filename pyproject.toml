@@ -1,0 +1,18 @@
+[project]
+name = "hr-policy-agent-lab"
+version = "0.1.0"
+description = "HR Policy Agent Lab — build one agent two ways: Vertex AI Search RAG vs Google Open Knowledge Format (OKF)."
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk",
+    "google-cloud-discoveryengine",
+    "google-cloud-storage",
+    "python-dotenv==1.1.0",
+    "pyyaml",
+    "pypdf",
+]
+
+# This is an application, not a library — don't try to build/install the repo
+# itself; uv just manages the environment and its dependencies.
+[tool.uv]
+package = false

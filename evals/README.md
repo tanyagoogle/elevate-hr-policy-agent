@@ -8,10 +8,10 @@ Run the **same** eval against both brains and compare:
 
 ```bash
 # OKF brain (no cloud) — grades YOUR implementation in agent/
-python evals/run_eval.py --mode okf --target agent
+uv run python evals/run_eval.py --mode okf --target agent
 
 # RAG brain (after Track A setup)
-python evals/run_eval.py --mode rag --target agent
+uv run python evals/run_eval.py --mode rag --target agent
 ```
 
 Answer generation needs Gemini credentials (`GEMINI_API_KEY` in `.env`). RAG mode

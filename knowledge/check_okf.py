@@ -2,7 +2,7 @@
 """OKF v0.1 conformance checker for the HR policy knowledge bundle.
 
 Usage:
-    python knowledge/check_okf.py knowledge
+    uv run python knowledge/check_okf.py knowledge
 
 Checks (hard failures -> exit 1):
   * every non-reserved .md file has a parseable YAML frontmatter block
@@ -22,7 +22,7 @@ import sys
 try:
     import yaml
 except ImportError:
-    print("[ERROR] PyYAML is required: pip install pyyaml")
+    print("[ERROR] PyYAML is required: uv sync (installs pyyaml)")
     sys.exit(2)
 
 RESERVED = {"index.md", "log.md"}

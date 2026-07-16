@@ -5,9 +5,9 @@ build the `root_agent`. You will also implement the tools it uses
 (agent/tools/*.py) and its instructions (agent/prompt.py).
 
 Run it:
-    python -m agent.agent "How many days of paid outpatient sick leave do I get?"
-    python -m agent.agent --interactive
-    adk web .            # then pick "agent" in the web UI
+    uv run python -m agent.agent "How many days of paid outpatient sick leave do I get?"
+    uv run python -m agent.agent --interactive
+    uv run adk web .            # then pick "agent" in the web UI
 """
 import asyncio
 import sys
@@ -125,7 +125,7 @@ def main(argv=None):
     elif argv:
         print(run_query(" ".join(argv)))
     else:
-        print('Usage: python -m agent.agent "<question>"  |  --interactive')
+        print('Usage: uv run python -m agent.agent "<question>"  |  --interactive')
 
 
 if __name__ == "__main__":

@@ -51,13 +51,13 @@ uvx google-agents-cli setup      # equips your coding agent with ADK skills
 
 ## Prerequisites
 
-- Python 3.11+ and `pip` (or `uv`).
+- Python 3.11+ and [`uv`](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
 - A Gemini API key (free tier): https://aistudio.google.com/apikey
 - For **Track A (RAG)** only: a Google Cloud project with billing, Terraform ≥ 1.5,
   and `gcloud` (see `rag/README.md`).
 
 ```bash
-pip install -r requirements.txt
+uv sync
 cp .env.example .env          # then set GEMINI_API_KEY
 ```
 
@@ -65,14 +65,14 @@ cp .env.example .env          # then set GEMINI_API_KEY
 
 ```bash
 # 1. Confirm the OKF knowledge bundle is well-formed
-python knowledge/check_okf.py knowledge
+uv run python knowledge/check_okf.py knowledge
 
 # 2. Confirm the scaffold imports and the retrieval mode
-python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
+uv run python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 
 # 3. Now do the lab: open LAB.md and build the agent yourself.
 #    When you've implemented the OKF tools + prompt + agent, run:
-#    RETRIEVAL_MODE=okf python -m agent.agent "How many days of bereavement leave do I get?"
+#    RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
 ```
 
 ---

@@ -13,7 +13,7 @@ handbook PDF. Your agent's `search_policy_docs` tool queries it.
   gcloud services enable discoveryengine.googleapis.com --project "$GOOGLE_CLOUD_PROJECT"
   gcloud auth application-default login
   ```
-- Terraform ≥ 1.5, and `pip install google-cloud-discoveryengine`.
+- Terraform ≥ 1.5 (Python deps are installed by `uv sync`).
 - Set `GOOGLE_CLOUD_PROJECT`, `VERTEX_AI_DATA_STORE_ID`, `VERTEX_AI_SEARCH_ENGINE_ID`
   in your `.env` (defaults match the Terraform defaults).
 
@@ -31,7 +31,7 @@ Terraform uploads `../data/handbook.pdf` to the source bucket automatically.
 
 ```bash
 cd ..
-python rag/ingest-docs.py --project "$GOOGLE_CLOUD_PROJECT"
+uv run python rag/ingest-docs.py --project "$GOOGLE_CLOUD_PROJECT"
 ```
 
 Indexing can take several minutes. Re-running re-indexes (full reconciliation).
@@ -39,9 +39,9 @@ Indexing can take several minutes. Re-running re-indexes (full reconciliation).
 ## 3. Verify retrieval
 
 ```bash
-python rag/verify-rag-search.py --query "outpatient sick leave and medical certificate"
+uv run python rag/verify-rag-search.py --query "outpatient sick leave and medical certificate"
 # no cloud yet? try the offline mock:
-python rag/verify-rag-search.py --mock --query "sick leave"
+uv run python rag/verify-rag-search.py --mock --query "sick leave"
 ```
 
 You should see titles + citation links. Once this looks right, implement

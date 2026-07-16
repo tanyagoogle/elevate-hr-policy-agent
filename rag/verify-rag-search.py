@@ -5,11 +5,11 @@ Sanity-check the RAG data store before wiring it into the agent: confirm semanti
 retrieval quality and that citation links come back.
 
 Live mode:
-    python rag/verify-rag-search.py --query "outpatient sick leave"
+    uv run python rag/verify-rag-search.py --query "outpatient sick leave"
     # uses GOOGLE_CLOUD_PROJECT / VERTEX_AI_SEARCH_ENGINE_ID from the environment
 
 Offline mock mode (no GCP needed, for local dev of the parser):
-    python rag/verify-rag-search.py --mock --query "sick leave"
+    uv run python rag/verify-rag-search.py --mock --query "sick leave"
 """
 import argparse
 import os
@@ -55,7 +55,7 @@ MOCK_DATABASE = {
 
 def query_vertex_search(project_id, location, engine_id, query_text):
     if not discoveryengine:
-        print("[ERROR] pip install google-cloud-discoveryengine")
+        print("[ERROR] uv sync (installs google-cloud-discoveryengine)")
         sys.exit(1)
 
     print(f"\nQuerying engine '{engine_id}' in project '{project_id}' ({location})")

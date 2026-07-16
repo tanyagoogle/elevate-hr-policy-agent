@@ -7,12 +7,12 @@ Reads configuration from environment variables (or --flags):
     VERTEX_AI_DATA_STORE_ID     data store id (default: hr-policies-lab-store)
 
 Usage:
-    python rag/ingest-docs.py \
+    uv run python rag/ingest-docs.py \
         --project "$GOOGLE_CLOUD_PROJECT" \
         --gcs-uri "gs://${GOOGLE_CLOUD_PROJECT}-hr-policies-source/*"
 
 Prerequisites:
-    pip install google-cloud-discoveryengine
+    uv sync (installs google-cloud-discoveryengine)
     gcloud auth application-default login
     # and the bucket/data store created via rag/vertex-search-setup.tf
 """
@@ -24,7 +24,7 @@ import time
 try:
     from google.cloud import discoveryengine_v1
 except ImportError:
-    print("[ERROR] pip install google-cloud-discoveryengine")
+    print("[ERROR] uv sync (installs google-cloud-discoveryengine)")
     sys.exit(2)
 
 
@@ -65,7 +65,7 @@ def main():
     if operation.exception():
         print(f"[FAILED] {operation.exception()}")
         sys.exit(1)
-    print("[DONE] Import finished. Verify with: python rag/verify-rag-search.py --query '...'")
+    print("[DONE] Import finished. Verify with: uv run python rag/verify-rag-search.py --query '...'")
 
 
 if __name__ == "__main__":
