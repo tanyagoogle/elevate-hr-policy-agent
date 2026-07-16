@@ -164,6 +164,47 @@ named root causes.
 
 ---
 
+## Reference — the score in one place
+
+Two graders run; understand both:
+
+- **Floor** (always): deterministic. Factual cases need all `expected_substrings`;
+  refusal cases need a refusal phrase. Cheap and ungameable-by-an-LLM, so it's a
+  guard, not the grade.
+- **Judge** (`--judge on`): an LLM scores each answer on the rubric dimensions
+  (0/1/2), weighted into a per-case % and a **TOTAL /100**. See `evals/RUBRICS.md`.
+
+Reading a scoreboard row — the low **dimension** tells you the **lever**:
+
+| Low dimension | Likely cause | Where you fix it |
+|---|---|---|
+| `reason` (on a gotcha) | found the limit, missed the prohibition | prompt / retrieval |
+| `grou` (grounding) | inventing facts not in the evidence | prompt |
+| `corr` | missed a sub-question or a number | prompt |
+| `cita` | wrong/missing source | prompt / tool |
+| `abst` | answered something it should refuse | prompt |
+
+Signals the runner prints:
+- **`BADGE`** — pass = ≥80% on the four hard cases (both gotchas + both refusals).
+- **`DELTA`** — change vs your last run for this mode/target, plus any regressions.
+- **`⚠ SUSPECT: floor passed but GROUNDING=0`** — the answer hit the keywords but
+  isn't supported by what was retrieved. This is the tell-tale of **hardcoding /
+  teaching to the test** — fix it, don't celebrate it.
+- **`⚠ SUSPECT: judge high but floor failed`** — usually a phrasing mismatch; inspect.
+
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---|---|
+| `root_agent is None` | Finish Lab 1, or use `--target solution` (instructor branch). |
+| 404 / auth error from the judge | The judge makes its own model calls — same auth as the agent; set `--judge-model` and creds (see `.env.example`). |
+| Score won't move as you iterate | You're changing more than one thing, or fixing the *instance* not the *class*. Change one lever; write a general rule. |
+| Added a rubric dimension but total barely changes | Your answers already max it — try a case that stresses it; the new column now shows on the scoreboard. |
+| `policy_eval_heldout.json` not found | It's trainer-provided (Exercise 5) — not in the learner repo by design. |
+| Judge is slow/expensive | Use `--subset smoke` while iterating; do a full `--judge on` run only to lock a number. |
+
+---
+
 ## Wrap-up
 
 You learned to measure an agent with a rubric, read a scoreboard to find the real

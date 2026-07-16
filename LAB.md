@@ -192,6 +192,43 @@ from semantic recall.
 
 ---
 
+## Reference — the ADK pieces you're using
+
+You don't need to master ADK; you assemble five things (the plumbing is given):
+
+| Piece | What it is | Where |
+|---|---|---|
+| `LlmAgent` | the agent = model + instruction (prompt) + tools | you build in `agent/agent.py` |
+| **tool** | a plain Python function the model may call | `agent/tools/*.py` |
+| `Runner` | drives the model↔tool loop until a final answer | given (`agent/agent.py`) |
+| **session** | per-conversation memory | given (in-memory) |
+| `RETRIEVAL_MODE` | picks the retrieval "brain" (`okf`/`rag`/`hybrid`) | `.env` / env var |
+
+The mental model: **the model reads your prompt, decides which tool to call, reads
+what the tool returns, then answers.** Grounding lives in two places — the prompt
+(tells it to answer only from tool results and to cite) and the tools (return the
+right policy text). If an answer is wrong, one of those two is the cause.
+
+How retrieval differs between the brains:
+- **OKF** — `list_concepts()` returns the map; the model picks a concept id and calls
+  `read_concept(id)` to read that section. Retrieval = *deliberate navigation*.
+- **RAG** — `search_policy_docs(query)` returns the top semantically-similar chunks.
+  Retrieval = *similarity search*.
+
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---|---|
+| `root_agent is None …` | You haven't built the `LlmAgent` yet — finish the TODO block in `agent/agent.py` (Exercise 03c). |
+| `NotImplementedError: Implement …` | The tool/prompt stub isn't filled in yet — that's expected until you implement it. |
+| 404 / `model … not found` or auth errors | Model access isn't configured. Set `GEMINI_API_KEY` **or** the Vertex vars — see `.env.example`. |
+| `Both GOOGLE_API_KEY and GEMINI_API_KEY are set …` | Harmless warning; set only one key in `.env`. |
+| `RuntimeWarning: 'agent.agent' found in sys.modules` / `Deprecated…` | Cosmetic ADK/runpy noise — ignore. |
+| Agent answers from memory / won't call a tool | Strengthen the prompt's "retrieve before you answer" rule (Exercise 03b). |
+| `adk web` shows no agent | Run it from the repo root (`uv run adk web .`) so it finds the `agent` package. |
+
+---
+
 ## Done?
 
 You built one agent two ways and formed an evidence-based opinion on **when to reach
