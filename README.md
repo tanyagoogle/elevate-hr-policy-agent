@@ -94,7 +94,9 @@ uvx google-agents-cli setup      # equips your coding agent with ADK skills
 ## Prerequisites
 
 - Python 3.11+ and [`uv`](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
-- A Gemini API key (free tier): https://aistudio.google.com/apikey
+- Model access — either a Gemini API key (free tier, https://aistudio.google.com/apikey)
+  **or** Vertex AI via your Google Cloud project (`gcloud auth application-default login`).
+  See `.env.example` for both paths. The Lab 2 judge uses the same auth.
 - For **Track A (RAG)** only: a Google Cloud project with billing, Terraform ≥ 1.5,
   and `gcloud` (see `rag/README.md`).
 

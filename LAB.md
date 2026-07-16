@@ -73,9 +73,11 @@ Read the comparison table in `README.md`. The one-liner:
 - **OKF**: the handbook is already curated into `knowledge/` — cross-linked markdown
   concepts with YAML frontmatter. The agent lists concepts and reads the right one.
 
-Browse `knowledge/index.md` and open one concept, e.g.
-`knowledge/leave/vacation-leave.md`. Notice the frontmatter (`type`, `title`,
-`resource`) and the cross-links — that structure is what the agent will navigate.
+Browse `knowledge/index.md` (the map) and open one concept, e.g.
+`knowledge/01-paid-time-off-leave-operations/1.2-paid-vacation-leave-singapore.md`.
+Notice the frontmatter (`type`, `title`, `source`) and that the body is the
+handbook's own text — that structure is what the agent will navigate. A concept's
+**id** is its path under `knowledge/` minus `.md`.
 
 ---
 
@@ -88,15 +90,14 @@ Build the OKF tools and the prompt, then the agent.
 > *"Implement list_concepts and read_concept in agent/tools/okf_tool.py. list_concepts
 > walks config.KNOWLEDGE_DIR for .md files (skipping index.md/log.md), parses YAML
 > frontmatter, and returns {'concepts':[{id,title,description}]}. read_concept maps a
-> concept id like 'leave/vacation-leave' to KNOWLEDGE_DIR/leave/vacation-leave.md,
-> splits frontmatter from body, and returns {'content','title','resource'}. Guard
-> against path traversal."*
+> concept id (its path under knowledge/ minus .md) to the file, splits frontmatter
+> from body, returns {'content','title','resource'} (resource from the `source`
+> field). Guard against path traversal."*
 
 Verify:
 ```bash
 uv run python -c "from agent.tools.okf_tool import list_concepts, read_concept; \
-  print(len(list_concepts()['concepts']),'concepts'); \
-  print(read_concept('leave/vacation-leave')['title'])"
+  cs=list_concepts()['concepts']; print(len(cs),'concepts'); print(cs[0]['id'])"
 ```
 
 **b) Write `agent/prompt.py`** — fill in the `POLICY_AGENT_PROMPT` TODOs (grounding,
@@ -110,14 +111,21 @@ how to use the tools, citations, domain containment).
 > config.GEMINI_MODEL, POLICY_AGENT_PROMPT, and select_tools(config.RETRIEVAL_MODE),
 > assigned to root_agent."*
 
-Run it:
+Run it — try a lookup, a **gotcha**, and an **out-of-scope** question (don't just
+test the easy one):
 ```bash
 RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
+RETRIEVAL_MODE=okf uv run python -m agent.agent "Can I expense a \$45 gift card for my host?"
+RETRIEVAL_MODE=okf uv run python -m agent.agent "What is the pet-adoption reimbursement policy?"
 RETRIEVAL_MODE=okf uv run adk web .     # or use the web UI and inspect the tool calls
 ```
 
-You should get **3 days? No — 4 weeks (20 work days)**, with a Sources link. Inspect
-the trajectory: the agent called `list_concepts` then `read_concept('leave/bereavement-leave')`.
+Expect: bereavement → **4 weeks (20 work days)** with a Sources link; the gift card →
+**not allowed** (gift cards are prohibited regardless of the $50 limit — the agent has
+to *reason* this from the handbook, it isn't spelled out); pet adoption → a **refusal**
+("not in the handbook"), never a made-up policy. Inspect the trajectory in `adk web .`:
+the agent should call `list_concepts` then `read_concept` on the relevant section(s).
+If the gift-card or pet questions come out wrong, that's exactly what Lab 2 fixes.
 
 ---
 
@@ -126,7 +134,10 @@ the trajectory: the agent called `list_concepts` then `read_concept('leave/berea
 Follow **`rag/README.md`**: `terraform apply`, ingest the PDF, and verify:
 
 ```bash
+# needs a provisioned Vertex data store (see rag/README.md):
 uv run python rag/verify-rag-search.py --query "outpatient sick leave and medical certificate"
+# no GCP yet? the offline mock still exercises the parser:
+uv run python rag/verify-rag-search.py --mock --query "sick leave"
 ```
 
 Then **implement `agent/tools/rag_tool.py`** (`search_policy_docs`).
@@ -178,6 +189,43 @@ from semantic recall.
   effort — this is OKF's core advantage.
 - **Deploy:** ask your coding agent to use `agents-cli` to deploy the agent to
   Google Cloud.
+
+---
+
+## Reference — the ADK pieces you're using
+
+You don't need to master ADK; you assemble five things (the plumbing is given):
+
+| Piece | What it is | Where |
+|---|---|---|
+| `LlmAgent` | the agent = model + instruction (prompt) + tools | you build in `agent/agent.py` |
+| **tool** | a plain Python function the model may call | `agent/tools/*.py` |
+| `Runner` | drives the model↔tool loop until a final answer | given (`agent/agent.py`) |
+| **session** | per-conversation memory | given (in-memory) |
+| `RETRIEVAL_MODE` | picks the retrieval "brain" (`okf`/`rag`/`hybrid`) | `.env` / env var |
+
+The mental model: **the model reads your prompt, decides which tool to call, reads
+what the tool returns, then answers.** Grounding lives in two places — the prompt
+(tells it to answer only from tool results and to cite) and the tools (return the
+right policy text). If an answer is wrong, one of those two is the cause.
+
+How retrieval differs between the brains:
+- **OKF** — `list_concepts()` returns the map; the model picks a concept id and calls
+  `read_concept(id)` to read that section. Retrieval = *deliberate navigation*.
+- **RAG** — `search_policy_docs(query)` returns the top semantically-similar chunks.
+  Retrieval = *similarity search*.
+
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---|---|
+| `root_agent is None …` | You haven't built the `LlmAgent` yet — finish the TODO block in `agent/agent.py` (Exercise 03c). |
+| `NotImplementedError: Implement …` | The tool/prompt stub isn't filled in yet — that's expected until you implement it. |
+| 404 / `model … not found` or auth errors | Model access isn't configured. Set `GEMINI_API_KEY` **or** the Vertex vars — see `.env.example`. |
+| `Both GOOGLE_API_KEY and GEMINI_API_KEY are set …` | Harmless warning; set only one key in `.env`. |
+| `RuntimeWarning: 'agent.agent' found in sys.modules` / `Deprecated…` | Cosmetic ADK/runpy noise — ignore. |
+| Agent answers from memory / won't call a tool | Strengthen the prompt's "retrieve before you answer" rule (Exercise 03b). |
+| `adk web` shows no agent | Run it from the repo root (`uv run adk web .`) so it finds the `agent` package. |
 
 ---
 

@@ -84,7 +84,7 @@ def floor_check(answer: str, case: dict):
 # --------------------------------------------------------------------------- #
 # Layer 2 — the LLM judge (rubric scoring)
 # --------------------------------------------------------------------------- #
-def evidence_to_str(evidence: list, limit: int = 4000) -> str:
+def evidence_to_str(evidence: list, limit: int = 8000) -> str:
     """Flatten the retrieved-tool payloads into text for the judge."""
     if not evidence:
         return "(the agent retrieved nothing)"
@@ -126,6 +126,15 @@ def build_judge_prompt(case, rubric, answer, evidence_str):
     gt = case.get("ground_truth_notes") or "(none)"
     gotcha = case.get("gotcha")
     gotcha_line = f"\nGOTCHA TO CATCH: {gotcha}" if gotcha else ""
+    srcs = case.get("expected_sources") or []
+    src_line = (
+        f"\n=== ACCEPTABLE SOURCES (for the citation dimension) ===\n"
+        f"A correct answer should cite the handbook section it used. Any of these "
+        f"handbook sections is an acceptable citation: {srcs}. The handbook repeats "
+        f"some topics across sections, so ANY section that genuinely supports the "
+        f"answer counts; a missing, wrong, or fabricated citation does not.\n"
+        if srcs else ""
+    )
     return f"""{JUDGE_INSTRUCTIONS}
 
 === QUESTION ===
@@ -133,7 +142,7 @@ def build_judge_prompt(case, rubric, answer, evidence_str):
 
 === GROUND-TRUTH NOTES (what a correct answer must reflect) ==={gotcha_line}
 {gt}
-
+{src_line}
 === RETRIEVED EVIDENCE (what the agent actually retrieved) ===
 {evidence_str}
 
@@ -223,7 +232,7 @@ def run_suite(cases, rubric, runner, use_judge, judge_model, n):
 # --------------------------------------------------------------------------- #
 # Reporting
 # --------------------------------------------------------------------------- #
-def print_report(results, use_judge, mode, target):
+def print_report(results, use_judge, mode, target, rubric):
     floor_pass = sum(1 for r in results if r.get("floor_pass"))
     n = len(results)
 
@@ -236,27 +245,43 @@ def print_report(results, use_judge, mode, target):
         print(f"\nFLOOR: {floor_pass}/{n} passed  (mode={mode}, target={target})")
         return None
 
-    # scoreboard
-    hdr = "case".ljust(30) + "".join(d[:4].rjust(6) for d in DIM_ORDER) + "   case%"
+    # columns derived from the rubric (so an added dimension actually shows up)
+    dim_order = list(rubric.get("dimensions", {}).keys()) or DIM_ORDER
+    hdr = "case".ljust(30) + "".join(d[:4].rjust(6) for d in dim_order) + "   case%"
     print("\n" + hdr)
     print("-" * len(hdr))
     for r in results:
         if "error" in r:
             print(f"{r['id'][:29].ljust(30)}  ERROR: {r['error'][:40]}")
             continue
-        cells = ""
-        for d in DIM_ORDER:
-            cells += (str(r["dims"][d]) if d in r["dims"] else "-").rjust(6)
+        cells = "".join((str(r["dims"][d]) if d in r["dims"] else "-").rjust(6) for d in dim_order)
         print(f"{r['id'][:29].ljust(30)}{cells}   {r['pct']*100:5.0f}")
     scored = [r for r in results if "pct" in r]
     total = 100 * sum(r["pct"] for r in scored) / len(scored) if scored else 0.0
     print("-" * len(hdr))
-    print(f"{'TOTAL'.ljust(30)}{''.join(' '*6 for _ in DIM_ORDER)}   {total:5.1f} / 100")
+    print(f"{'TOTAL'.ljust(30)}{''.join(' ' * 6 for _ in dim_order)}   {total:5.1f} / 100")
     print(f"FLOOR (deterministic): {floor_pass}/{n} passed")
-    if floor_pass < n:
-        suspects = [r["id"] for r in scored if not r.get("floor_pass") and r["pct"] > 0.7]
-        if suspects:
-            print(f"⚠  SUSPECT (judge high but floor failed): {suspects} — inspect these.")
+
+    # anti-gaming alarms
+    s1 = [r["id"] for r in scored if not r.get("floor_pass") and r["pct"] > 0.7]
+    if s1:
+        print(f"⚠  SUSPECT (judge high but floor failed — check phrasing/grader): {s1}")
+    s2 = [r["id"] for r in scored if r.get("floor_pass") and r["dims"].get("grounding") == 0]
+    if s2:
+        print(f"⚠  SUSPECT (floor passed but GROUNDING=0 — likely hardcoded/ungrounded): {s2}")
+
+    # badge (gates)
+    gates = rubric.get("gates", {})
+    hard = gates.get("hard_cases", [])
+    thr = gates.get("badge_min_on_hard_cases", 0.8)
+    if hard:
+        by_id = {r["id"]: r["pct"] for r in scored}
+        got = {h: by_id.get(h) for h in hard if h in by_id}
+        ok = got and all(v >= thr for v in got.values())
+        fails = [h for h, v in got.items() if v < thr]
+        print(f"BADGE (>= {int(thr*100)}% on hard cases {hard}): "
+              f"{'✅ PASS' if ok else '❌ not yet'}"
+              + (f" — below bar: {fails}" if fails else ""))
     return {"total": total, "per_case": {r["id"]: r["pct"] for r in scored}}
 
 
@@ -324,7 +349,7 @@ def main():
         runner = load_agent(args.target)
         print(f"\n===== mode={mode} | target={args.target} | judge={args.judge} | subset={args.subset} =====")
         results = run_suite(cases, rubric, runner, use_judge, args.judge_model, args.self_consistency)
-        summary = print_report(results, use_judge, mode, args.target)
+        summary = print_report(results, use_judge, mode, args.target, rubric)
         if summary:
             summaries[mode] = summary
 
