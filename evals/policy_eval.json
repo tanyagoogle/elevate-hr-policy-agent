@@ -1,48 +1,93 @@
 {
   "name": "HR Policy Agent — golden eval",
-  "description": "Grounded policy Q&A, gotcha cases, and refusals. Reuses questions from elevate-hr-agent's rag_eval_golden set, with expected facts from the Altostrat Singapore handbook. Runs against RETRIEVAL_MODE=okf and =rag.",
+  "description": "Grounded policy Q&A, gotcha cases, and refusals. Graded two ways: a deterministic 'floor' (expected_substrings / refusal) and, optionally, an LLM judge against the rubric below. See evals/RUBRICS.md and LAB_EVALS.md.",
+  "rubric": {
+    "scale": [0, 1, 2],
+    "dimensions": {
+      "correctness": { "weight": 3, "desc": "Required facts are present and correct (all parts of the question)." },
+      "grounding":   { "weight": 3, "desc": "Every claim is supported by the retrieved policy text; nothing invented, no outside knowledge." },
+      "reasoning":   { "weight": 3, "desc": "Catches the gotcha (a value under a limit doesn't make a prohibited category allowed) or shows the required calculation." },
+      "abstention":  { "weight": 2, "desc": "Answers when the handbook covers it; refuses when it doesn't or the question is out of domain." },
+      "citation":    { "weight": 1, "desc": "Ends with a Sources section citing the correct policy/section." }
+    },
+    "gates": {
+      "grounding_zero_caps_case_at": 0.40,
+      "badge_min_on_hard_cases": 0.80,
+      "hard_cases": ["host_gift_card_gotcha", "room_salon_gotcha", "out_of_domain", "ungrounded_policy"]
+    }
+  },
   "cases": [
     {
       "id": "sick_leave_and_mc",
+      "smoke": true,
       "query": "How many days of paid outpatient sick leave do I get per year, and what is the deadline to submit a Medical Certificate if I'm out sick for 3 days?",
+      "expect_refusal": false,
       "expected_substrings": ["14", "48"],
-      "expect_refusal": false
+      "dimensions": ["correctness", "grounding", "citation"],
+      "expected_sources": ["leave/sick-and-hospitalization-leave"],
+      "ground_truth_notes": "Up to 14 days paid outpatient sick leave per calendar year at 100% of base salary. If sick more than two work days, a Medical Certificate must be submitted (via WorkWeek) within 48 hours."
     },
     {
       "id": "vacation_accrual_and_shift",
+      "smoke": false,
       "query": "I have been working at Altostrat for 8 years and I work 12-hour shifts. How many vacation days do I earn per year, and how many vacation days do I log to take a single 12-hour shift off?",
+      "expect_refusal": false,
       "expected_substrings": ["21", "1.5"],
-      "expect_refusal": false
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["leave/vacation-leave"],
+      "ground_truth_notes": "Accrual tiers: 1-6 years = 20 days, 7-10 years = 21 days, 11+ years = 22 days. 8 years falls in the 7-10 tier => 21 days/year. A vacation day is an 8-hour block, so a 12-hour shift = 1.5 vacation days. A correct answer shows both results (and ideally the small calculation)."
     },
     {
       "id": "ramp_back_time",
+      "smoke": false,
       "query": "What are the working hour and pay requirements during the 2-week Ramp-Back time?",
+      "expect_refusal": false,
       "expected_substrings": ["50%", "100%"],
-      "expect_refusal": false
+      "dimensions": ["correctness", "grounding", "citation"],
+      "expected_sources": ["leave/ramp-back-time"],
+      "ground_truth_notes": "During the up-to-2-weeks ramp-back period you must work at least 50% of your normal weekly hours while receiving 100% of your normal salary."
     },
     {
       "id": "host_gift_card_gotcha",
+      "smoke": true,
       "query": "I'm staying at my cousin's house on a work trip instead of a hotel. As a thank-you I want to buy him a $45 gift card and expense it. Is that allowed?",
+      "expect_refusal": false,
       "expected_substrings": ["gift card", "prohibit"],
-      "expect_refusal": false
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["expenses/lodging-and-transportation", "business-courtesies/gifts-and-entertainment-non-government"],
+      "gotcha": "A value under a spending limit does not make a prohibited category allowed.",
+      "ground_truth_notes": "Host gifts up to US$50/day are allowed WITH receipts, BUT cash and gift cards are prohibited as host gifts (and as business courtesies) regardless of amount. Therefore a $45 gift card is NOT allowed — the $50/day limit is irrelevant because gift cards are a prohibited category. Correct conclusion: not allowed."
     },
     {
       "id": "room_salon_gotcha",
+      "smoke": false,
       "query": "I want to take a prospective client to a room salon to celebrate a contract. It's $80 per person, and since that's under $100 I assume I don't need manager approval. Correct?",
+      "expect_refusal": false,
       "expected_substrings": ["prohibit"],
-      "expect_refusal": false
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["business-courtesies/gifts-and-entertainment-non-government"],
+      "gotcha": "The approval threshold applies only to permitted courtesies; adult entertainment is prohibited outright.",
+      "ground_truth_notes": "Adult entertainment (strip clubs, hostess bars, room salons) is a prohibited business courtesy regardless of value. The 'under US$100 => no approval needed' tier applies only to otherwise-permitted courtesies, so it does NOT make a room salon acceptable. Correct conclusion: prohibited (approval is not the point)."
     },
     {
       "id": "out_of_domain",
+      "smoke": false,
       "query": "Can you write me a Python function that reverses a string?",
+      "expect_refusal": true,
       "expected_substrings": [],
-      "expect_refusal": true
+      "dimensions": ["abstention", "grounding"],
+      "expected_sources": [],
+      "ground_truth_notes": "This is out of domain (not HR policy). The agent should politely decline and offer to help with HR policy instead. It must NOT write the code and must NOT fabricate a policy."
     },
     {
       "id": "ungrounded_policy",
+      "smoke": true,
       "query": "What is Altostrat's reimbursement policy for adopting a pet?",
+      "expect_refusal": true,
       "expected_substrings": [],
-      "expect_refusal": true
+      "dimensions": ["abstention", "grounding"],
+      "expected_sources": [],
+      "ground_truth_notes": "The handbook has no pet-adoption reimbursement policy. The agent should say it has no policy on file for this, rather than inventing an amount or procedure."
     }
   ]
 }
