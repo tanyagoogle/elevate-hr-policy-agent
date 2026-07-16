@@ -35,21 +35,24 @@ def read_concept(concept_id: str) -> dict:
     """Read one OKF concept's content and citation.
 
     Args:
-        concept_id: e.g. "leave/bereavement-leave" (no .md).
+        concept_id: e.g. "03-other-compassionate-unpaid-leaves/3.1-bereavement-leave-global" (no .md).
 
     Returns:
         {"content": str, "title": str, "resource": str | None}
         where `content` is the markdown body (after the frontmatter) and
-        `resource` is the frontmatter `resource` URL if present.
+        `resource` is the frontmatter `source` (or `resource`) reference if present.
     """
     # TODO(you): map concept_id -> config.KNOWLEDGE_DIR/<concept_id>.md, read it,
-    #   split frontmatter from body, and return the body + title + resource.
+    #   split frontmatter from body, and return the body + title + source.
     #
-    # HINT: concept_id "leave/bereavement-leave" -> os.path.join(KNOWLEDGE_DIR,
-    #       "leave", "bereavement-leave.md"). Guard against paths that escape the
-    #       bundle. Return a helpful message if the file does not exist.
+    # HINT: a concept_id is the path under knowledge/ minus ".md", e.g.
+    #       "03-other-compassionate-unpaid-leaves/3.1-bereavement-leave-global" ->
+    #       os.path.join(KNOWLEDGE_DIR, "03-...", "3.1-...global.md"). Guard against
+    #       paths that escape the bundle. Return a helpful message if it doesn't exist.
+    #       Concept frontmatter uses a `source:` field (the handbook section) for citations.
     #
     # Suggested coding-agent prompt:
     #   "Implement read_concept(concept_id): resolve to KNOWLEDGE_DIR/<id>.md,
-    #    parse YAML frontmatter, return {'content','title','resource'}."
+    #    parse YAML frontmatter, return {'content','title','resource'} (resource from
+    #    the frontmatter `source` field)."
     raise NotImplementedError("Implement read_concept()")

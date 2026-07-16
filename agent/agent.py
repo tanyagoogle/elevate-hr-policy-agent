@@ -120,7 +120,9 @@ def run_query_traced(query: str, user_id: str = "learner", session_id: str = "se
             if fr is not None:
                 evidence.append({"tool": getattr(fr, "name", "?"), "payload": fr.response})
         if event.is_final_response() and event.content.parts:
-            final = event.content.parts[0].text or final
+            texts = [p.text for p in event.content.parts if getattr(p, "text", None)]
+            if texts:
+                final = "\n".join(texts)
     return final, evidence
 
 

@@ -24,7 +24,7 @@
       "expect_refusal": false,
       "expected_substrings": ["14", "48"],
       "dimensions": ["correctness", "grounding", "citation"],
-      "expected_sources": ["leave/sick-and-hospitalization-leave"],
+      "expected_sources": ["1.1", "19.2", "19.4"],
       "ground_truth_notes": "Up to 14 days paid outpatient sick leave per calendar year at 100% of base salary. If sick more than two work days, a Medical Certificate must be submitted (via WorkWeek) within 48 hours."
     },
     {
@@ -34,7 +34,7 @@
       "expect_refusal": false,
       "expected_substrings": ["21", "1.5"],
       "dimensions": ["correctness", "grounding", "reasoning", "citation"],
-      "expected_sources": ["leave/vacation-leave"],
+      "expected_sources": ["1.2", "20.2"],
       "ground_truth_notes": "Accrual tiers: 1-6 years = 20 days, 7-10 years = 21 days, 11+ years = 22 days. 8 years falls in the 7-10 tier => 21 days/year. A vacation day is an 8-hour block, so a 12-hour shift = 1.5 vacation days. A correct answer shows both results (and ideally the small calculation)."
     },
     {
@@ -44,7 +44,7 @@
       "expect_refusal": false,
       "expected_substrings": ["50%", "100%"],
       "dimensions": ["correctness", "grounding", "citation"],
-      "expected_sources": ["leave/ramp-back-time"],
+      "expected_sources": ["2.3", "28"],
       "ground_truth_notes": "During the up-to-2-weeks ramp-back period you must work at least 50% of your normal weekly hours while receiving 100% of your normal salary."
     },
     {
@@ -54,7 +54,7 @@
       "expect_refusal": false,
       "expected_substrings": ["gift card", "prohibit"],
       "dimensions": ["correctness", "grounding", "reasoning", "citation"],
-      "expected_sources": ["expenses/lodging-and-transportation", "business-courtesies/gifts-and-entertainment-non-government"],
+      "expected_sources": ["4.3", "5.2", "14.2"],
       "gotcha": "A value under a spending limit does not make a prohibited category allowed.",
       "ground_truth_notes": "Host gifts up to US$50/day are allowed WITH receipts, BUT cash and gift cards are prohibited as host gifts (and as business courtesies) regardless of amount. Therefore a $45 gift card is NOT allowed — the $50/day limit is irrelevant because gift cards are a prohibited category. Correct conclusion: not allowed."
     },
@@ -65,7 +65,7 @@
       "expect_refusal": false,
       "expected_substrings": ["prohibit"],
       "dimensions": ["correctness", "grounding", "reasoning", "citation"],
-      "expected_sources": ["business-courtesies/gifts-and-entertainment-non-government"],
+      "expected_sources": ["5.2", "13.4", "14.2"],
       "gotcha": "The approval threshold applies only to permitted courtesies; adult entertainment is prohibited outright.",
       "ground_truth_notes": "Adult entertainment (strip clubs, hostess bars, room salons) is a prohibited business courtesy regardless of value. The 'under US$100 => no approval needed' tier applies only to otherwise-permitted courtesies, so it does NOT make a room salon acceptable. Correct conclusion: prohibited (approval is not the point)."
     },

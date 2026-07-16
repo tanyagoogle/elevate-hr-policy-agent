@@ -1,0 +1,10 @@
+# Section 19: SICK TIME & HOSPITALIZATION LEAVE (SINGAPORE)
+
+- [19.1 Eligibility and Scope](/19-sick-time-hospitalization-leave-singapore/19.1-eligibility-and-scope.md)
+- [19.2 Outpatient Sick Leave](/19-sick-time-hospitalization-leave-singapore/19.2-outpatient-sick-leave.md)
+- [19.3 Hospitalization Leave](/19-sick-time-hospitalization-leave-singapore/19.3-hospitalization-leave.md)
+- [19.4 Notification and Medical Certificates (MC)](/19-sick-time-hospitalization-leave-singapore/19.4-notification-and-medical-certificates-mc.md)
+- [19.5 Medical and Health Appointments](/19-sick-time-hospitalization-leave-singapore/19.5-medical-and-health-appointments.md)
+- [19.6 Compensation, Benefits, and Systems During Leave](/19-sick-time-hospitalization-leave-singapore/19.6-compensation-benefits-and-systems-during-leave.md)
+- [19.7 Excessive Usage & Disciplinary Action](/19-sick-time-hospitalization-leave-singapore/19.7-excessive-usage-disciplinary-action.md)
+- [19.8 Leaving or Transferring](/19-sick-time-hospitalization-leave-singapore/19.8-leaving-or-transferring.md)

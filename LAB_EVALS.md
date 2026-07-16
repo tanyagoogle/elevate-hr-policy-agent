@@ -140,10 +140,13 @@ be over-penalized?) Writing evals *is* iterating on your definition of "good."
 
 ## Exercise 5 — The reveal (don't overfit)
 
-Tell your trainer when your agent is locked. They'll hand you a **held-out** test —
-new questions, same skills — that you run **once**:
+Tell your trainer when your agent is locked. The held-out set
+(`evals/policy_eval_heldout.json`) is **provided by your trainer at this point** — it
+is intentionally *not* in the learner repo, so you can't tune against it. Once you
+have it, run it **once**:
 
 ```bash
+# your trainer will provide evals/policy_eval_heldout.json first
 uv run python evals/run_eval.py --mode okf --target agent --judge on \
   --eval-file evals/policy_eval_heldout.json
 ```
