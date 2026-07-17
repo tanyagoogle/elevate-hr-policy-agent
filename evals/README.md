@@ -28,7 +28,7 @@ uv run python evals/run_eval.py --mode okf --target agent --judge on --subset sm
 uv run python evals/run_eval.py --target agent --judge on --compare-modes
 ```
 
-Answer generation needs Gemini credentials (`GEMINI_API_KEY` in `.env`). The judge
+Answer generation needs model credentials (`GEMINI_API_KEY` or Vertex AI configured in `.env`). The judge
 also makes model calls; set `EVAL_JUDGE_MODEL` to override the default
 (`gemini-2.5-flash`). RAG mode additionally needs a provisioned Vertex data store
 (see `rag/README.md`).

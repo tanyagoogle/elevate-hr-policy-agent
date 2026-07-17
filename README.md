@@ -91,18 +91,44 @@ uvx google-agents-cli setup      # equips your coding agent with ADK skills
 
 ---
 
-## Prerequisites
+## Prerequisites & Setup
 
 - Python 3.11+ and [`uv`](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
-- Model access — either a Gemini API key (free tier, https://aistudio.google.com/apikey)
-  **or** Vertex AI via your Google Cloud project (`gcloud auth application-default login`).
-  See `.env.example` for both paths. The Lab 2 judge uses the same auth.
-- For **Track A (RAG)** only: a Google Cloud project with billing, Terraform ≥ 1.5,
-  and `gcloud` (see `rag/README.md`).
+- For **Track A (RAG)** only: a Google Cloud project with billing, Terraform ≥ 1.5, and `gcloud` (see `rag/README.md`).
+- Model access — choose **either** Google AI Studio (Gemini API key) **or** Vertex AI via Google Cloud. The Lab 2 judge uses the same auth.
 
 ```bash
+# 1. Install dependencies
 uv sync
-cp .env.example .env          # then set GEMINI_API_KEY
+
+# 2. Copy the environment configuration
+cp .env.example .env
+```
+
+### Choose your Model Authentication Path
+
+#### Path A: Gemini API Key (Google AI Studio)
+Simplest for local testing. Get a free API key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+
+In `.env`, set:
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+#### Path B: Vertex AI (Google Cloud)
+Use Vertex AI with your Google Cloud project credentials.
+
+1. Log in with Google Cloud Application Default Credentials (ADC) and set your project:
+```bash
+gcloud auth application-default login
+gcloud config set project YOUR_PROJECT_ID
+```
+
+2. In `.env`, comment out `GEMINI_API_KEY` and configure the Vertex AI variables:
+```bash
+GOOGLE_GENAI_USE_VERTEXAI=true
+GOOGLE_CLOUD_PROJECT=your_gcp_project_id_here
+GOOGLE_CLOUD_LOCATION=us-central1
 ```
 
 ## Quickstart (OKF, no cloud)

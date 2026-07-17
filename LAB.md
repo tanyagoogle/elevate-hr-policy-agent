@@ -36,9 +36,18 @@ back to it. (Full framing in `README.md`.)
 
 ```bash
 uv sync
-cp .env.example .env          # set GEMINI_API_KEY
+cp .env.example .env
 uvx google-agents-cli setup   # encouraged: equips your coding agent with ADK skills
 ```
+
+Configure your model authentication in `.env` (choose **Path A** or **Path B**):
+- **Path A (Gemini API Key):** Set `GEMINI_API_KEY` in `.env` ([get API key](https://aistudio.google.com/apikey)).
+- **Path B (Vertex AI):** Authenticate with `gcloud` and enable Vertex AI in `.env`:
+  ```bash
+  gcloud auth application-default login
+  gcloud config set project YOUR_PROJECT_ID
+  ```
+  In `.env`, comment out `GEMINI_API_KEY` and set `GOOGLE_GENAI_USE_VERTEXAI=true`, `GOOGLE_CLOUD_PROJECT=your_gcp_project_id_here`, and `GOOGLE_CLOUD_LOCATION=us-central1`.
 
 Sanity checks:
 

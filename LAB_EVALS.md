@@ -7,8 +7,8 @@ by fixing the real weakness, not by memorizing the test.
 **Prerequisites**
 - Lab 1 finished (a working `agent/` you can run), **or** use `--target solution`
   to work against the reference agent.
-- `uv sync` done; `GEMINI_API_KEY` set in `.env`.
-- The LLM judge (Exercise 1+) makes model calls — same key as the agent.
+- `uv sync` done; model access configured in `.env` (`GEMINI_API_KEY` or Vertex AI).
+- The LLM judge (Exercise 1+) makes model calls — uses the same model credentials as the agent.
 
 **The mental model.** An *eval* is a test with known-good answers
 (`evals/policy_eval.json`). A *rubric* is the scorecard that turns an answer into a
