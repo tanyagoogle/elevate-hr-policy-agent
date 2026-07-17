@@ -221,10 +221,13 @@ def run_suite(cases, rubric, runner, use_judge, judge_model, n):
         floor_pass, floor_why = floor_check(answer, c)
         row = {"id": c["id"], "floor_pass": floor_pass, "floor_why": floor_why}
         if use_judge:
-            dim_scores, why = judge_case(c, rubric, answer, evidence_to_str(evidence), judge_model, n)
-            row["dims"] = dim_scores
-            row["why"] = why
-            row["pct"] = score_case(c, rubric, dim_scores)
+            try:
+                dim_scores, why = judge_case(c, rubric, answer, evidence_to_str(evidence), judge_model, n)
+                row["dims"] = dim_scores
+                row["why"] = why
+                row["pct"] = score_case(c, rubric, dim_scores)
+            except Exception as e:  # noqa: BLE001
+                row["error"] = f"Judge error ({e})"
         results.append(row)
     return results
 
@@ -252,10 +255,11 @@ def print_report(results, use_judge, mode, target, rubric):
     print("-" * len(hdr))
     for r in results:
         if "error" in r:
-            print(f"{r['id'][:29].ljust(30)}  ERROR: {r['error'][:40]}")
+            print(f"{r['id'][:29].ljust(30)}  ERROR: {r['error']}")
             continue
-        cells = "".join((str(r["dims"][d]) if d in r["dims"] else "-").rjust(6) for d in dim_order)
-        print(f"{r['id'][:29].ljust(30)}{cells}   {r['pct']*100:5.0f}")
+        cells = "".join((str(r["dims"][d]) if d in r.get("dims", {}) else "-").rjust(6) for d in dim_order)
+        pct_str = f"{r['pct']*100:5.0f}" if "pct" in r else "  N/A"
+        print(f"{r['id'][:29].ljust(30)}{cells}   {pct_str}")
     scored = [r for r in results if "pct" in r]
     total = 100 * sum(r["pct"] for r in scored) / len(scored) if scored else 0.0
     print("-" * len(hdr))

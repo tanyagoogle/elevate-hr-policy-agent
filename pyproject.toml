@@ -12,6 +12,13 @@ dependencies = [
     "pypdf",
 ]
 
+[project.optional-dependencies]
+lint = [
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+    "codespell>=2.3.0",
+]
+
 # This is an application, not a library — don't try to build/install the repo
 # itself; uv just manages the environment and its dependencies.
 [tool.uv]
