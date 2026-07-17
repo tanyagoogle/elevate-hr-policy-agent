@@ -17,6 +17,8 @@ spot → change one thing → measure again → keep it if the number went up.
 
 > ⚠️ The whole point is to build a genuinely better agent — **not** to hardcode the 7
 > answers. At the end, the trainer reveals a *hidden* test to check you didn't cheat.
+>
+> 💡 **Note on Evaluation Tooling:** In this lab, we use `evals/run_eval.py` because it includes deterministic floor checks tailored specifically to the handbook gotchas (e.g. spend limits and citation rules) without requiring GCP project setup. In production ADK projects on Google Cloud, you can run standardized evaluations across multiple models using `agents-cli eval run`.
 
 ---
 

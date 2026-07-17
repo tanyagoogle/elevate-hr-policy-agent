@@ -117,7 +117,10 @@ test the easy one):
 RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
 RETRIEVAL_MODE=okf uv run python -m agent.agent "Can I expense a \$45 gift card for my host?"
 RETRIEVAL_MODE=okf uv run python -m agent.agent "What is the pet-adoption reimbursement policy?"
-RETRIEVAL_MODE=okf uv run adk web .     # or use the web UI and inspect the tool calls
+
+# Or run interactively via ADK / agents-cli:
+agents-cli playground                    # launches web UI at http://127.0.0.1:8080/dev-ui/?app=agent
+uv run adk run agent "How many days of bereavement leave do I get?"
 ```
 
 Expect: bereavement → **4 weeks (20 work days)** with a Sources link; the gift card →

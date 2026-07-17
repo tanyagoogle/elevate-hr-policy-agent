@@ -115,8 +115,16 @@ uv run python knowledge/check_okf.py knowledge
 uv run python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 
 # 3. Now do the lab: open LAB.md and build the agent yourself.
-#    When you've implemented the OKF tools + prompt + agent, run:
-#    RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
+#    When you've implemented the OKF tools + prompt + agent, test it three ways:
+#
+#    A) Local Web UI Playground (Recommended):
+#       agents-cli playground      # or: uv run adk web .
+#
+#    B) Interactive Terminal CLI:
+#       uv run adk run agent "How many days of bereavement leave do I get?"
+#
+#    C) Standalone Python script:
+#       RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
 ```
 
 ---

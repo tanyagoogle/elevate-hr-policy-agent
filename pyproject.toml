@@ -2,12 +2,12 @@
 name = "hr-policy-agent-lab"
 version = "0.1.0"
 description = "HR Policy Agent Lab — build one agent two ways: Vertex AI Search RAG vs Google Open Knowledge Format (OKF)."
-requires-python = ">=3.11"
+requires-python = ">=3.11, <3.14"
 dependencies = [
     "google-adk",
     "google-cloud-discoveryengine",
     "google-cloud-storage",
-    "python-dotenv==1.1.0",
+    "python-dotenv>=1.0.0",
     "pyyaml",
     "pypdf",
 ]
