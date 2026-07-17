@@ -78,7 +78,7 @@ Given for you: the OKF `knowledge/` bundle, the handbook, the Vertex RAG scripts
 ```
   YOU  ──talk──▶  YOUR CODING AGENT  ──commands+skills──▶  agents-cli  ──▶  THE HR POLICY AGENT
   (a human)       (Claude Code /                          (a toolkit for      (ADK LlmAgent + Gemini,
-                   Gemini CLI / Codex)                     coding agents)       the thing you build)
+                   JetSki / AGY)                     coding agents)       the thing you build)
 ```
 
 `agents-cli` is **not** a chat agent — it's a toolkit that teaches your coding
