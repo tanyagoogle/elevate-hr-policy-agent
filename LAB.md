@@ -1,7 +1,7 @@
 # Lab: Build the HR Policy Agent (RAG vs OKF)
 
 You'll build one grounded HR Policy Agent, give it two interchangeable retrieval
-brains, and compare them. **Drive your own coding agent** to write the code — each
+brains, and compare them. **Drive Jetski**, your AI coding agent (`jetski` or `agy`), to write the code — each
 step has a hint and a ready-to-paste prompt.
 
 Time: ~90 minutes. Track B (OKF) needs no cloud; Track A (RAG) needs a GCP project.
@@ -37,7 +37,7 @@ back to it. (Full framing in `README.md`.)
 ```bash
 uv sync
 cp .env.example .env
-uvx google-agents-cli setup   # encouraged: equips your coding agent with ADK skills
+uvx --python 3.11 google-agents-cli setup   # equips Jetski with ADK skills
 ```
 
 Configure your model authentication in `.env` (choose **Path A** or **Path B**):
@@ -47,7 +47,8 @@ Configure your model authentication in `.env` (choose **Path A** or **Path B**):
   gcloud auth application-default login
   gcloud config set project YOUR_PROJECT_ID
   ```
-  In `.env`, comment out `GEMINI_API_KEY` and set `GOOGLE_GENAI_USE_VERTEXAI=true`, `GOOGLE_CLOUD_PROJECT=your_gcp_project_id_here`, and `GOOGLE_CLOUD_LOCATION=us-central1`.
+  In `.env`, comment out `GEMINI_API_KEY` and set `GOOGLE_GENAI_USE_VERTEXAI=true`, `GOOGLE_CLOUD_PROJECT=your_gcp_project_id_here`, and `GOOGLE_CLOUD_LOCATION=global`.
+  *(Disclaimer: For preview models like `gemini-3.5-flash` on Vertex AI, set `GOOGLE_CLOUD_LOCATION=global` to avoid regional routing 404 errors).*
 
 Sanity checks:
 
@@ -55,6 +56,18 @@ Sanity checks:
 uv run python knowledge/check_okf.py knowledge     # OKF bundle is well-formed
 uv run python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 ```
+
+---
+
+## 00.5 — Launch Jetski & Start Coding
+
+Open your terminal in the repository root and start **Jetski**:
+
+```bash
+jetski      # or: agy
+```
+
+Keep Jetski open. For each exercise below, copy the **Suggested coding-agent prompt** and paste it directly into Jetski to have it generate and edit the code for you!
 
 ---
 

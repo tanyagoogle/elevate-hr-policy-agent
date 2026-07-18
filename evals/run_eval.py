@@ -24,7 +24,7 @@ Usage:
     # score both brains side by side
     uv run python evals/run_eval.py --target agent --judge on --compare-modes
 
-Judge model: set EVAL_JUDGE_MODEL (default gemini-2.5-flash). It should be a
+Judge model: set EVAL_JUDGE_MODEL (default gemini-3.5-flash). It should be a
 different, ideally stronger model than the agent under test.
 """
 import argparse
@@ -331,7 +331,7 @@ def main():
     ap.add_argument("--eval-file", default=os.path.join(HERE, "policy_eval.json"))
     ap.add_argument("--judge", choices=["on", "off"], default="off")
     ap.add_argument("--subset", choices=["smoke", "full"], default="full")
-    ap.add_argument("--judge-model", default=os.getenv("EVAL_JUDGE_MODEL", "gemini-2.5-flash"))
+    ap.add_argument("--judge-model", default=os.getenv("EVAL_JUDGE_MODEL", "gemini-3.5-flash"))
     ap.add_argument("--self-consistency", type=int, default=1, help="judge N times, take median")
     ap.add_argument("--compare-modes", action="store_true", help="run okf and rag side by side")
     args = ap.parse_args()
