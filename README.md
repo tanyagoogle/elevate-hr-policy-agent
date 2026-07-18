@@ -8,9 +8,8 @@ grounded in the *Altostrat Singapore Employee Policy Handbook* — and build its
 - **Track B — OKF:** Google's **Open Knowledge Format** — a cross-linked markdown
   bundle the agent *navigates deliberately* (no vector database).
 
-You write the code by instructing **your own coding agent** (Claude Code, Gemini
-CLI, Codex, Antigravity — your choice). Every exercise ships a hint and a suggested
-prompt, so any coding agent works.
+You write the code by instructing **Jetski**, your AI coding agent (`jetski` or `agy`).
+Every exercise ships a hint and a suggested prompt to paste directly into Jetski.
 
 ---
 
@@ -76,17 +75,16 @@ Given for you: the OKF `knowledge/` bundle, the handbook, the Vertex RAG scripts
 ## The three layers (mental model)
 
 ```
-  YOU  ──talk──▶  YOUR CODING AGENT  ──commands+skills──▶  agents-cli  ──▶  THE HR POLICY AGENT
-  (a human)       (Claude Code /                          (a toolkit for      (ADK LlmAgent + Gemini,
-                   JetSki / AGY)                     coding agents)       the thing you build)
+  YOU  ──talk──▶  JETSKI (Coding Agent)  ──commands+skills──▶  agents-cli  ──▶  THE HR POLICY AGENT
+  (a human)       (AI pair programmer /                         (a toolkit)       (ADK LlmAgent + Gemini,
+                   launched with `jetski`)                                         the thing you build)
 ```
 
-`agents-cli` is **not** a chat agent — it's a toolkit that teaches your coding
-agent how to scaffold/run/eval/deploy ADK agents on Google Cloud. Installing it is
-**encouraged, not required**:
+`agents-cli` is a toolkit that teaches Jetski how to scaffold, run, evaluate, and deploy ADK agents on Google Cloud. Installing it is **encouraged, not required**:
 
 ```bash
-uvx google-agents-cli setup      # equips your coding agent with ADK skills
+uvx --python 3.11 google-agents-cli setup      # equips Jetski with ADK skills
+# or install globally: uv tool install --python 3.11 google-agents-cli && agents-cli setup
 ```
 
 ---
@@ -128,10 +126,14 @@ gcloud config set project YOUR_PROJECT_ID
 ```bash
 GOOGLE_GENAI_USE_VERTEXAI=true
 GOOGLE_CLOUD_PROJECT=your_gcp_project_id_here
-GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_CLOUD_LOCATION=global
 ```
 
-## Quickstart (OKF, no cloud)
+> ⚠️ **Region & Model Disclaimer:** Depending on your Google Cloud project quota and the model tier you are using (e.g. preview models like `gemini-3.5-flash`), you should set `GOOGLE_CLOUD_LOCATION=global` (or your assigned regional location) to avoid `404 / Model Not Found` routing errors.
+
+---
+
+## Quickstart & Coding with Jetski
 
 ```bash
 # 1. Confirm the OKF knowledge bundle is well-formed
@@ -140,18 +142,26 @@ uv run python knowledge/check_okf.py knowledge
 # 2. Confirm the scaffold imports and the retrieval mode
 uv run python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 
-# 3. Now do the lab: open LAB.md and build the agent yourself.
-#    When you've implemented the OKF tools + prompt + agent, test it three ways:
-#
-#    A) Local Web UI Playground (Recommended):
-#       agents-cli playground      # or: uv run adk web .
-#
-#    B) Interactive Terminal CLI:
-#       uv run adk run agent "How many days of bereavement leave do I get?"
-#
-#    C) Standalone Python script:
-#       RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
+# 3. Launch Jetski to start coding!
+jetski      # or: agy
 ```
+
+Now open **`LAB.md`**, copy the suggested prompts for each exercise, and paste them into **Jetski** to implement your agent.
+
+When you've implemented the OKF tools + prompt + agent, test it three ways:
+
+- **A) Local Web UI Playground (Recommended):**
+  ```bash
+  agents-cli playground      # or: uv run adk web .
+  ```
+- **B) Interactive Terminal CLI:**
+  ```bash
+  uv run adk run agent "How many days of bereavement leave do I get?"
+  ```
+- **C) Standalone Python script:**
+  ```bash
+  RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
+  ```
 
 ---
 

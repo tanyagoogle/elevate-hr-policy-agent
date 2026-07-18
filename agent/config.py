@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Model ---------------------------------------------------------------
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
 # --- Retrieval brain: "okf" | "rag" | "hybrid" ---------------------------
 # okf   -> traverse the local knowledge/ OKF bundle (no Google Cloud needed)
