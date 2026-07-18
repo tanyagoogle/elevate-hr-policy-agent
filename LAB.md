@@ -122,35 +122,26 @@ uv run python -c "from agent.tools.okf_tool import list_concepts, read_concept; 
   cs=list_concepts()['concepts']; print(len(cs),'concepts'); print(cs[0]['id'])"
 ```
 
-**b) Write `agent/prompt.py`** — fill in the `POLICY_AGENT_PROMPT` TODOs (grounding,
-how to use the tools, citations, domain containment).
-> *"Complete POLICY_AGENT_PROMPT: answer only from tool results, refuse when the
-> policy isn't found, always cite sources as markdown links under 'Sources:', and
-> decline non-HR questions."*
+**b) Write `agent/prompt.py`** — start with a basic starter `POLICY_AGENT_PROMPT`.
+> Prompt Jetski:
+> *"In agent/prompt.py, write a basic POLICY_AGENT_PROMPT for the Altostrat HR Policy Assistant telling it to answer employee HR policy questions using the available retrieval tools."*
 
 **c) Build the agent** — fill the TODO block in `agent/agent.py`.
-> *"In agent/agent.py, build an ADK LlmAgent named hr_policy_agent using
-> config.GEMINI_MODEL, POLICY_AGENT_PROMPT, and select_tools(config.RETRIEVAL_MODE),
-> assigned to root_agent."*
+> Prompt Jetski:
+> *"In agent/agent.py, build an ADK LlmAgent named hr_policy_agent using config.GEMINI_MODEL, POLICY_AGENT_PROMPT, and select_tools(config.RETRIEVAL_MODE), assigned to root_agent."*
 
-Run it — try a lookup, a **gotcha**, and an **out-of-scope** question (don't just
-test the easy one):
+Run it — try a basic lookup, a **gotcha**, and an **out-of-scope** question:
 ```bash
 RETRIEVAL_MODE=okf uv run python -m agent.agent "How many days of bereavement leave do I get?"
 RETRIEVAL_MODE=okf uv run python -m agent.agent "Can I expense a \$45 gift card for my host?"
-RETRIEVAL_MODE=okf uv run python -m agent.agent "What is the pet-adoption reimbursement policy?"
+RETRIEVAL_MODE=okf uv run python -m agent.agent "Can you write me a Python function that reverses a string?"
 
 # Or run interactively via ADK / agents-cli:
 agents-cli playground                    # launches web UI at http://127.0.0.1:8080/dev-ui/?app=agent
 uv run adk run agent "How many days of bereavement leave do I get?"
 ```
 
-Expect: bereavement → **4 weeks (20 work days)** with a Sources link; the gift card →
-**not allowed** (gift cards are prohibited regardless of the $50 limit — the agent has
-to *reason* this from the handbook, it isn't spelled out); pet adoption → a **refusal**
-("not in the handbook"), never a made-up policy. Inspect the trajectory in `adk web .`:
-the agent should call `list_concepts` then `read_concept` on the relevant section(s).
-If the gift-card or pet questions come out wrong, that's exactly what Lab 2 fixes.
+Notice how it performs: the basic question answers well, but with a naive starter prompt, the agent will likely fail or hallucinate on gotchas (gift cards), missing citations, or out-of-domain requests. **That is intentional!** In Lab 2, you will measure its baseline score and use hillclimbing to diagnose and fix these prompt weaknesses.
 
 ---
 
