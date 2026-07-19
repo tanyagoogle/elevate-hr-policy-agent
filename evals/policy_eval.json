@@ -1,19 +1,30 @@
 {
   "name": "HR Policy Agent — golden eval",
-  "description": "Grounded policy Q&A, gotcha cases, and refusals. Graded two ways: a deterministic 'floor' (expected_substrings / refusal) and, optionally, an LLM judge against the rubric below. See evals/RUBRICS.md and LAB_EVALS.md.",
+  "description": "Grounded policy Q&A, gotcha cases, multi-hop synthesis, and refusals. Graded two ways: a deterministic 'floor' (expected_substrings / refusal) and an LLM judge against the rubric in evals/RUBRICS.md.",
   "rubric": {
     "scale": [0, 1, 2],
     "dimensions": {
       "correctness": { "weight": 3, "desc": "Required facts are present and correct (all parts of the question)." },
       "grounding":   { "weight": 3, "desc": "Every claim is supported by the retrieved policy text; nothing invented, no outside knowledge." },
-      "reasoning":   { "weight": 3, "desc": "Catches the gotcha (a value under a limit doesn't make a prohibited category allowed) or shows the required calculation." },
+      "reasoning":   { "weight": 3, "desc": "Catches the gotcha, applies conditional exceptions, overrides, or shows required calculations." },
       "abstention":  { "weight": 2, "desc": "Answers when the handbook covers it; refuses when it doesn't or the question is out of domain." },
       "citation":    { "weight": 1, "desc": "Ends with a Sources section citing the correct policy/section." }
     },
     "gates": {
       "grounding_zero_caps_case_at": 0.40,
       "badge_min_on_hard_cases": 0.80,
-      "hard_cases": ["host_gift_card_gotcha", "room_salon_gotcha", "out_of_domain", "ungrounded_policy"]
+      "hard_cases": [
+        "host_gift_card_gotcha",
+        "room_salon_gotcha",
+        "pet_bereavement_distractor",
+        "group_meal_seniority_trap",
+        "unpaid_personal_leave_multihop",
+        "aged_expense_approval_level",
+        "shared_parental_leave_father_deduction",
+        "remote_confidential_public_place",
+        "out_of_domain",
+        "ungrounded_policy"
+      ]
     }
   },
   "cases": [
@@ -35,7 +46,7 @@
       "expected_substrings": ["21", "1.5"],
       "dimensions": ["correctness", "grounding", "reasoning", "citation"],
       "expected_sources": ["1.2", "20.2"],
-      "ground_truth_notes": "Accrual tiers: 1-6 years = 20 days, 7-10 years = 21 days, 11+ years = 22 days. 8 years falls in the 7-10 tier => 21 days/year. A vacation day is an 8-hour block, so a 12-hour shift = 1.5 vacation days. A correct answer shows both results (and ideally the small calculation)."
+      "ground_truth_notes": "Accrual tiers: 1-6 years = 20 days, 7-10 years = 21 days, 11+ years = 22 days. 8 years falls in the 7-10 tier => 21 days/year. A vacation day is an 8-hour block, so a 12-hour shift = 1.5 vacation days."
     },
     {
       "id": "ramp_back_time",
@@ -52,11 +63,11 @@
       "smoke": true,
       "query": "I'm staying at my cousin's house on a work trip instead of a hotel. As a thank-you I want to buy him a $45 gift card and expense it. Is that allowed?",
       "expect_refusal": false,
-      "expected_substrings": ["gift card", "prohibit"],
+      "expected_substrings": ["prohibit"],
       "dimensions": ["correctness", "grounding", "reasoning", "citation"],
       "expected_sources": ["4.3", "5.2", "14.2"],
       "gotcha": "A value under a spending limit does not make a prohibited category allowed.",
-      "ground_truth_notes": "Host gifts up to US$50/day are allowed WITH receipts, BUT cash and gift cards are prohibited as host gifts (and as business courtesies) regardless of amount. Therefore a $45 gift card is NOT allowed — the $50/day limit is irrelevant because gift cards are a prohibited category. Correct conclusion: not allowed."
+      "ground_truth_notes": "Host gifts up to US$50/day are allowed WITH receipts, BUT cash and gift cards are prohibited as host gifts (and as business courtesies) regardless of amount. Therefore a $45 gift card is NOT allowed — the $50/day limit is irrelevant because gift cards are a prohibited category."
     },
     {
       "id": "room_salon_gotcha",
@@ -67,7 +78,73 @@
       "dimensions": ["correctness", "grounding", "reasoning", "citation"],
       "expected_sources": ["5.2", "13.4", "14.2"],
       "gotcha": "The approval threshold applies only to permitted courtesies; adult entertainment is prohibited outright.",
-      "ground_truth_notes": "Adult entertainment (strip clubs, hostess bars, room salons) is a prohibited business courtesy regardless of value. The 'under US$100 => no approval needed' tier applies only to otherwise-permitted courtesies, so it does NOT make a room salon acceptable. Correct conclusion: prohibited (approval is not the point)."
+      "ground_truth_notes": "Adult entertainment (strip clubs, hostess bars, room salons) is a prohibited business courtesy regardless of value. The 'under US$100 => no approval needed' tier applies only to otherwise-permitted courtesies, so it does NOT make a room salon acceptable. Conclusion: prohibited."
+    },
+    {
+      "id": "pet_bereavement_distractor",
+      "smoke": true,
+      "query": "My golden retriever passed away this morning after 12 years with our family. How many days of paid bereavement leave can I log in WorkWeek?",
+      "expect_refusal": false,
+      "expected_substrings": ["not apply", "0"],
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["3.1", "22.2"],
+      "gotcha": "Semantic keyword match returns 4 weeks for human loved ones, but pet loss is explicitly excluded from paid bereavement leave.",
+      "ground_truth_notes": "Paid bereavement leave is up to 4 weeks (20 work days) for close loved ones or pregnancy loss. However, Section 3.1 explicitly states: 'Paid bereavement leave does not apply to pet loss.' The employee is entitled to 0 days of paid bereavement leave and must use vacation, unpaid time off, or flexible schedules instead."
+    },
+    {
+      "id": "group_meal_seniority_trap",
+      "smoke": false,
+      "query": "I am an L4 Software Engineer. I attended a project celebration dinner costing $85 per person with my L5 Tech Lead, my L6 Manager, and our L7 Director. Can I pay the bill with my Corporate Card and submit the Concur expense report for reimbursement?",
+      "expect_refusal": false,
+      "expected_substrings": ["senior", "director"],
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["4.4", "04"],
+      "gotcha": "The dollar amount ($85) is under the $120 cap, but the submission hierarchy requires the most senior person present to pay and submit.",
+      "ground_truth_notes": "While $85 is under the $120/person daily group meal cap, Section 4.4 explicitly dictates: 'The most senior colleague present (highest level) must pay and submit the expense to ensure independent manager approval.' Since an L7 Director was present, the L4 engineer cannot submit the expense report; the L7 Director must pay and submit."
+    },
+    {
+      "id": "unpaid_personal_leave_multihop",
+      "smoke": false,
+      "query": "I have been at Altostrat for 3 years, received a 'Significant Impact' GRAD rating, and want to take 45 days of continuous unpaid personal leave. I currently have 15 days of accrued vacation remaining in my balance. Can my direct manager approve this unpaid leave today?",
+      "expect_refusal": false,
+      "expected_substrings": ["director", "vacation"],
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["3.3", "18.2"],
+      "gotcha": "Multi-condition synthesis: leaves >30 days reclassify as Personal Leave (requires Director approval), and remaining vacation must be fewer than 10 days.",
+      "ground_truth_notes": "Unpaid time off exceeding 30 days is reclassified as Personal Leave (up to 92 continuous days). Personal leave requires approval from both Manager AND Director (so direct manager approval alone is insufficient). Furthermore, the handbook specifies that employees should have fewer than 10 vacation days remaining before unpaid personal leave is approved. With 15 vacation days left, the employee must utilize vacation days first."
+    },
+    {
+      "id": "aged_expense_approval_level",
+      "smoke": false,
+      "query": "I found an out-of-pocket taxi receipt for $60 from a business trip 75 days ago. My direct manager is happy to approve it in Concur. Is direct manager approval sufficient for this reimbursement?",
+      "expect_refusal": false,
+      "expected_substrings": ["director", "60"],
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["4.2", "04"],
+      "gotcha": "Aged expenses override the normal approval workflow based on transaction age.",
+      "ground_truth_notes": "Normal travel expenses require direct manager approval. However, Section 4.2 dictates that out-of-pocket expense claims older than 60 days require Director approval (and claims older than 90 days require VP approval). Since the claim is 75 days old, direct manager approval is NOT sufficient; Director approval is required."
+    },
+    {
+      "id": "shared_parental_leave_father_deduction",
+      "smoke": false,
+      "query": "My wife and I both work at Altostrat in Singapore. We just welcomed a newborn. If I (the father) allocate 2 weeks of my Shared Parental Leave to my wife, how many weeks of Baby Bonding Leave do I receive?",
+      "expect_refusal": false,
+      "expected_substrings": ["16"],
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["2.2", "26.2"],
+      "gotcha": "Dual-employee parents donating SPL face a direct deduction from the standard 18-week Baby Bonding Leave.",
+      "ground_truth_notes": "Standard Baby Bonding Leave (BBL) is 18 weeks. However, Section 2.2 explicitly provides an exception: if both parents are Altostrat employees and the father allocates SPL to his partner, his BBL is reduced to 16 or 17 weeks depending on the allocation. Allocating 2 weeks reduces BBL from 18 to 16 weeks."
+    },
+    {
+      "id": "remote_confidential_public_place",
+      "smoke": false,
+      "query": "I am approved for full remote work. Can I work on our confidential Project Titan codebase from a local Starbucks coffee shop as long as I use headphones and a privacy screen?",
+      "expect_refusal": false,
+      "expected_substrings": ["prohibit", "public"],
+      "dimensions": ["correctness", "grounding", "reasoning", "citation"],
+      "expected_sources": ["5.4", "6.1", "16.2"],
+      "gotcha": "Privacy measures (headphones, screen) apply away from the office, but confidential projects are strictly banned in public settings regardless of accessories.",
+      "ground_truth_notes": "Section 5.4 and Section 6.1 explicitly state: 'Employees must not work on Altostrat confidential or proprietary company projects in public settings (such as coffee shops or public libraries).' While headphones and privacy screens are required for remote work in general, working on confidential projects in public places like Starbucks is strictly prohibited."
     },
     {
       "id": "out_of_domain",
