@@ -166,8 +166,7 @@ Run the same question against the RAG brain:
 RETRIEVAL_MODE=rag uv run python -m agent.agent "How many days of paid outpatient sick leave do I get?"
 ```
 
-> 💸 Run `terraform destroy` (see `rag/README.md`) when you're done — Vertex AI
-> Search is billable.
+
 
 ---
 
