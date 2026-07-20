@@ -209,6 +209,9 @@ Signals the runner prints:
 
 ## Wrap-up
 
+> 💸 Run `terraform destroy` (see `rag/README.md`) when you're done — Vertex AI
+> Search is billable.
+
 You learned to measure an agent with a rubric, read a scoreboard to find the real
 weakness, hillclimb with disciplined one-variable changes, extend a rubric, and prove
 generalization on a held-out set. That measure-diagnose-improve loop — not any single
