@@ -1,7 +1,7 @@
 # Lab: Build the HR Policy Agent (RAG vs OKF)
 
 You'll build one grounded HR Policy Agent, give it two interchangeable retrieval
-brains, and compare them. **Drive Jetski**, your AI coding agent (`jetski` or `agy`), to write the code — each
+brains, and compare them. **Drive your AI coding agent** (`agy`) to write the code — each
 step has a hint and a ready-to-paste prompt.
 
 Time: ~90 minutes. Track B (OKF) needs no cloud; Track A (RAG) needs a GCP project.
@@ -37,7 +37,7 @@ back to it. (Full framing in `README.md`.)
 ```bash
 uv sync
 cp .env.example .env
-uvx --python 3.11 google-agents-cli setup   # equips Jetski with ADK skills
+uvx --python 3.11 google-agents-cli setup   # equips your coding agent with ADK skills
 ```
 
 Configure your model authentication in `.env` (choose **Path A** or **Path B**):
@@ -59,15 +59,15 @@ uv run python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 
 ---
 
-## 00.5 — Launch Jetski & Start Coding
+## 00.5 — Launch Your Coding Agent & Start Coding
 
-Open your terminal in the repository root and start **Jetski**:
+Open your terminal in the repository root and start **your coding agent**:
 
 ```bash
-jetski      # or: agy
+agy
 ```
 
-Keep Jetski open. For each exercise below, copy the **Suggested coding-agent prompt** and paste it directly into Jetski to have it generate and edit the code for you!
+Keep your coding agent open. For each exercise below, copy the **Suggested coding-agent prompt** and paste it directly into your coding agent to have it generate and edit the code for you!
 
 ---
 
@@ -123,11 +123,11 @@ uv run python -c "from agent.tools.okf_tool import list_concepts, read_concept; 
 ```
 
 **b) Write `agent/prompt.py`** — start with a basic starter `POLICY_AGENT_PROMPT`.
-> Prompt Jetski:
+> Prompt your coding agent:
 > *"In agent/prompt.py, write a basic POLICY_AGENT_PROMPT for the Altostrat HR Policy Assistant telling it to answer employee HR policy questions using the available retrieval tools."*
 
 **c) Build the agent** — fill the TODO block in `agent/agent.py`.
-> Prompt Jetski:
+> Prompt your coding agent:
 > *"In agent/agent.py, build an ADK LlmAgent named hr_policy_agent using config.GEMINI_MODEL, POLICY_AGENT_PROMPT, and select_tools(config.RETRIEVAL_MODE), assigned to root_agent."*
 
 Run it — try a basic lookup, a **gotcha**, and an **out-of-scope** question:

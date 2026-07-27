@@ -8,8 +8,8 @@ grounded in the *Altostrat Singapore Employee Policy Handbook* — and build its
 - **Track B — OKF:** Google's **Open Knowledge Format** — a cross-linked markdown
   bundle the agent *navigates deliberately* (no vector database).
 
-You write the code by instructing **Jetski**, your AI coding agent (`jetski` or `agy`).
-Every exercise ships a hint and a suggested prompt to paste directly into Jetski.
+You write the code by instructing **your AI coding agent** (`agy`).
+Every exercise ships a hint and a suggested prompt to paste directly into your coding agent.
 
 ---
 
@@ -75,15 +75,15 @@ Given for you: the OKF `knowledge/` bundle, the handbook, the Vertex RAG scripts
 ## The three layers (mental model)
 
 ```
-  YOU  ──talk──▶  JETSKI (Coding Agent)  ──commands+skills──▶  agents-cli  ──▶  THE HR POLICY AGENT
-  (a human)       (AI pair programmer /                         (a toolkit)       (ADK LlmAgent + Gemini,
-                   launched with `jetski`)                                         the thing you build)
+  YOU  ──talk──▶  CODING AGENT  ──commands+skills──▶  agents-cli  ──▶  THE HR POLICY AGENT
+  (a human)       (AI pair programmer,                (a toolkit)       (ADK LlmAgent + Gemini,
+                   launched with `agy`)                                 the thing you build)
 ```
 
-`agents-cli` is a toolkit that teaches Jetski how to scaffold, run, evaluate, and deploy ADK agents on Google Cloud. Installing it is **encouraged, not required**:
+`agents-cli` is a toolkit that teaches your coding agent how to scaffold, run, evaluate, and deploy ADK agents on Google Cloud. Installing it is **encouraged, not required**:
 
 ```bash
-uvx --python 3.11 google-agents-cli setup      # equips Jetski with ADK skills
+uvx --python 3.11 google-agents-cli setup      # equips your coding agent with ADK skills
 # or install globally: uv tool install --python 3.11 google-agents-cli && agents-cli setup
 ```
 
@@ -133,7 +133,7 @@ GOOGLE_CLOUD_LOCATION=global
 
 ---
 
-## Quickstart & Coding with Jetski
+## Quickstart & Coding with Your AI Agent
 
 ```bash
 # 1. Confirm the OKF knowledge bundle is well-formed
@@ -142,11 +142,11 @@ uv run python knowledge/check_okf.py knowledge
 # 2. Confirm the scaffold imports and the retrieval mode
 uv run python -c "import agent.config as c; print('mode:', c.RETRIEVAL_MODE)"
 
-# 3. Launch Jetski to start coding!
-jetski      # or: agy
+# 3. Launch your coding agent to start coding!
+agy
 ```
 
-Now open **`LAB.md`**, copy the suggested prompts for each exercise, and paste them into **Jetski** to implement your agent.
+Now open **`LAB.md`**, copy the suggested prompts for each exercise, and paste them into **your coding agent** to implement your agent.
 
 When you've implemented the OKF tools + prompt + agent, test it three ways:
 
