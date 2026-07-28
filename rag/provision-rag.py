@@ -77,8 +77,8 @@ def provision(project_id: str, region: str, location: str, data_store_id: str, e
     
     data_store = discoveryengine_v1.DataStore(
         display_name="HR Policy Lab Data Store",
-        industry_vertical=discoveryengine_v1.DataStore.IndustryVertical.GENERIC,
-        solution_types=[discoveryengine_v1.DataStore.SolutionType.SOLUTION_TYPE_SEARCH],
+        industry_vertical=discoveryengine_v1.IndustryVertical.GENERIC,
+        solution_types=[discoveryengine_v1.SolutionType.SOLUTION_TYPE_SEARCH],
         content_config=discoveryengine_v1.DataStore.ContentConfig.CONTENT_REQUIRED,
     )
     try:
