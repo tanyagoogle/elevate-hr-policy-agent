@@ -32,6 +32,7 @@ import json
 import os
 import statistics
 import sys
+import time
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -85,12 +86,25 @@ def floor_check(answer: str, case: dict):
 # Layer 2 — the LLM judge (rubric scoring)
 # --------------------------------------------------------------------------- #
 def evidence_to_str(evidence: list, limit: int = 8000) -> str:
-    """Flatten the retrieved-tool payloads into text for the judge."""
+    """Flatten the retrieved-tool payloads into text for the judge.
+
+    `list_concepts` returns a ~46k-char index of all 152 concept titles. It is a
+    navigation aid, not policy text — nothing should ever be *grounded* in it, and
+    at full length it crowds the actual retrieved sections out of the judge's
+    evidence window. Summarise it; keep the real policy text verbatim.
+    """
     if not evidence:
         return "(the agent retrieved nothing)"
     parts = []
     for e in evidence:
         payload = e.get("payload")
+        if isinstance(payload, dict) and "concepts" in payload:
+            n = len(payload.get("concepts") or [])
+            parts.append(
+                f"[tool: {e.get('tool')}] (concept index listing {n} concept titles — "
+                f"a navigation aid, not policy text)"
+            )
+            continue
         parts.append(f"[tool: {e.get('tool')}] {json.dumps(payload, default=str)[:limit]}")
     return "\n\n".join(parts)[: limit * 2]
 
@@ -165,6 +179,35 @@ def _parse_json(text: str):
     return json.loads(text.strip())
 
 
+def _judge_call_with_retry(client, types, model, prompt, attempts=4):
+    """Call the judge, retrying transient failures with exponential backoff.
+
+    A single 429 RESOURCE_EXHAUSTED used to drop the whole case from the run, and
+    because TOTAL is averaged over *scored* cases only, the score silently
+    renormalised over a smaller denominator. That is a bad failure mode in a lab
+    built on comparing this run to the last one, so retry before giving up.
+    """
+    for attempt in range(attempts):
+        try:
+            return client.models.generate_content(
+                model=model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0, response_mime_type="application/json"
+                ),
+            )
+        except Exception as e:  # noqa: BLE001
+            transient = any(
+                s in str(e).upper()
+                for s in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "DEADLINE")
+            )
+            if not transient or attempt == attempts - 1:
+                raise
+            delay = 2 ** attempt
+            print(f"    judge call failed ({type(e).__name__}); retrying in {delay}s")
+            time.sleep(delay)
+
+
 def judge_case(case, rubric, answer, evidence_str, model, n=1):
     """Call the LLM judge n times; return {dim: median_score} + justifications."""
     from google import genai
@@ -175,18 +218,21 @@ def judge_case(case, rubric, answer, evidence_str, model, n=1):
     runs = []
     justifications = {}
     for _ in range(n):
-        resp = client.models.generate_content(
-            model=model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0, response_mime_type="application/json"
-            ),
-        )
+        resp = _judge_call_with_retry(client, types, model, prompt)
         parsed = _parse_json(resp.text)
         scores = {}
         for d in case["dimensions"]:
             entry = parsed.get(d, {})
-            scores[d] = int(entry.get("score", 0))
+            # The judge sometimes returns a bare score ({"grounding": 2}) instead of
+            # the requested {"score": .., "why": ..} object. Accept both shapes.
+            if isinstance(entry, (int, float, str)):
+                entry = {"score": entry, "why": ""}
+            if not isinstance(entry, dict):
+                entry = {}
+            try:
+                scores[d] = int(entry.get("score", 0))
+            except (TypeError, ValueError):
+                scores[d] = 0
             justifications[d] = entry.get("why", "")
         runs.append(scores)
     median = {d: int(statistics.median([r[d] for r in runs])) for d in case["dimensions"]}
@@ -214,7 +260,13 @@ def run_suite(cases, rubric, runner, use_judge, judge_model, n):
     results = []
     for c in cases:
         try:
-            answer, evidence = runner.run_query_traced(c["query"])
+            # One fresh session per case. Sharing a session lets an earlier case's
+            # retrieved text answer a later one from conversation history, which
+            # leaves `evidence` empty and makes the judge score a well-grounded
+            # answer grounding=0. Eval cases must be independent.
+            answer, evidence = runner.run_query_traced(
+                c["query"], session_id=f"case-{c['id']}"
+            )
         except Exception as e:  # noqa: BLE001
             results.append({"id": c["id"], "error": str(e)})
             continue
@@ -264,6 +316,13 @@ def print_report(results, use_judge, mode, target, rubric):
     total = 100 * sum(r["pct"] for r in scored) / len(scored) if scored else 0.0
     print("-" * len(hdr))
     print(f"{'TOTAL'.ljust(30)}{''.join(' ' * 6 for _ in dim_order)}   {total:5.1f} / 100")
+    # TOTAL averages over *scored* cases, so a dropped case silently renormalises
+    # it. Never let that pass unremarked — an unexplained +5 between runs is
+    # indistinguishable from real progress.
+    if len(scored) != len(results):
+        missing = [r["id"] for r in results if "pct" not in r]
+        print(f"⚠  TOTAL covers {len(scored)} of {len(results)} cases — "
+              f"NOT comparable to a full run. Unscored: {missing}")
     print(f"FLOOR (deterministic): {floor_pass}/{n} passed")
 
     # anti-gaming alarms
